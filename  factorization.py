@@ -223,46 +223,52 @@ def cry(matrix):
 
     return None
 
-def fast_guass(mat): #m rows and n columns
-    m_row = len(mat)
-    n_col = len(mat[0])
+def FG(matrix):  # matrix with m rows and n columns
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
 
-    if(m_row < n_col):
-        print("More Data needed, Enter more rows.")
-    pivot = [False]*m_row
-    pivot_found = False
-    pivot_col_to_row = {}
-    for j in range(n_col):
+    if num_rows < num_cols:
+        print("More data needed, enter more rows.")
+        return
+
+    pivot_rows = [False] * num_rows
+    column_to_row_map = {}
+    
+    for col in range(num_cols):
         pivot_found = False
-        for i in range(m_row):
-            if(mat[i][j] == 1):
-              pivot[i] = True
-              pivot_col_to_row[j]=i
-              pivot_found = True
-              break
-        if (pivot_found == True):
-            for k in range(n_col):
-                if(k == j):
+        for row in range(num_rows):
+            if matrix[row][col] == 1:
+                pivot_rows[row] = True
+                column_to_row_map[col] = row
+                pivot_found = True
+                break
+        
+        if pivot_found:
+            for current_col in range(num_cols):
+                if current_col == col:
                     continue
-                if (mat[i][k] == 1):
-                    for row_index in range(m_row):
-                        mat[row_index][k] = (mat[row_index][j] + mat[row_index][k])%2                   
-    return (mat,pivot,pivot_col_to_row)
+                if matrix[row][current_col] == 1:
+                    for current_row in range(num_rows):
+                        matrix[current_row][current_col] = (matrix[current_row][col] + matrix[current_row][current_col]) % 2
 
-def find_dependent_rows(mat, pivot, pivot_col_to_row):
-    m_row = len(mat)
-    n_col = len(mat[0])
-    for i in range(m_row):
-        if (pivot[i] == False):
-            dep_row = mat[i]
-            dependency = [i]
-            for j,val in enumerate(dep_row):
-                if (val==1):
-                    dependency.append(pivot_col_to_row[j])
+    return matrix, pivot_rows, column_to_row_map
 
-            dependency = [a+1 for a in dependency]
-            dependency.sort()
-            yield dependency
+def find_dependent_rows(matrix, pivot_rows, column_to_row_map):
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+    
+    for row in range(num_rows):
+        if not pivot_rows[row]:
+            dependent_row = matrix[row]
+            dependencies = [row]
+            
+            for col, value in enumerate(dependent_row):
+                if value == 1:
+                    dependencies.append(column_to_row_map[col])
+            
+            dependencies = [idx + 1 for idx in dependencies]
+            dependencies.sort()
+            yield dependencies
 
 def pom(n):
     n = int(n)
@@ -287,7 +293,7 @@ def pom(n):
             b.append(temp2[1])
             c.append(temp2[2])
         M += 1
-    o, h, v = fast_guass(a)
+    o, h, v = FG(a)
     for dependecy in find_dependent_rows(o, h, v):
         for i in dependecy:
             X = X*b[i-1]%n
